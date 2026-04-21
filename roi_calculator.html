@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ROI Calculator · Courseau by LearnUpon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:       #0D1B2A;
+    --blue:      #2563EB;
+    --blue-lt:   #DBEAFE;
+    --blue-mid:  #93C5FD;
+    --green:     #16A34A;
+    --green-lt:  #DCFCE7;
+    --slate:     #64748B;
+    --slate-lt:  #F1F5F9;
+    --white:     #FFFFFF;
+    --border:    #E2E8F0;
+    --shadow:    0 4px 24px rgba(13,27,42,.10);
+    --shadow-lg: 0 16px 56px rgba(13,27,42,.18);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: linear-gradient(135deg, #0D1B2A 0%, #1E3A5F 50%, #0D1B2A 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 48px 16px 80px;
+    color: var(--ink);
+  }
+
+  /* subtle dot grid */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image: radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events:none;
+  }
+
+  .card {
+    background: var(--white);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 760px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    position: relative;
+    animation: rise .6s cubic-bezier(.22,1,.36,1) both;
+  }
+  @keyframes rise {
+    from { opacity:0; transform:translateY(32px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--ink);
+    padding: 40px 48px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::after {
+    content:'';
+    position:absolute; bottom:-1px; left:0; right:0; height:24px;
+    background: var(--white);
+    border-radius: 24px 24px 0 0;
+  }
+  .header-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--blue-mid);
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 5vw, 40px);
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+  .header-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,.55);
+    font-weight: 300;
+  }
+  /* decorative arc */
+  .header-arc {
+    position:absolute; right:-60px; top:-60px;
+    width:260px; height:260px;
+    border-radius:50%;
+    border: 40px solid rgba(37,99,235,.18);
+    pointer-events:none;
+  }
+
+  /* ── Body ── */
+  .body { padding: 36px 48px 48px; }
+
+  /* ── Section label ── */
+  .section-label {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 20px;
+  }
+  .section-label span {
+    flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── Inputs grid ── */
+  .inputs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+  @media (max-width: 520px) {
+    .inputs-grid { grid-template-columns: 1fr; }
+    .body { padding: 28px 24px 40px; }
+    .header { padding: 32px 24px 36px; }
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .input-group label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--slate);
+  }
+  .input-row {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color .2s, box-shadow .2s;
+    background: var(--white);
+  }
+  .input-row:focus-within {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+  }
+  .input-prefix {
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--slate);
+    background: var(--slate-lt);
+    border-right: 1.5px solid var(--border);
+    height: 44px;
+    display: flex; align-items: center;
+    user-select: none;
+  }
+  .input-suffix {
+    padding: 0 12px;
+    font-size: 13px;
+    color: var(--slate);
+    background: var(--slate-lt);
+    border-left: 1.5px solid var(--border);
+    height: 44px;
+    display: flex; align-items: center;
+    user-select: none;
+  }
+  .input-row input[type="number"] {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 0 14px;
+    height: 44px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--blue);
+    background: transparent;
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  /* slider */
+  .slider-wrap { margin-top: 6px; }
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%; height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+    accent-color: var(--blue);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--blue);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(37,99,235,.4);
+    transition: transform .15s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+  /* ── Results ── */
+  .results-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 520px) { .results-grid { grid-template-columns: 1fr; } }
+
+  .result-card {
+    background: var(--slate-lt);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex; flex-direction: column; gap: 4px;
+    transition: transform .2s;
+  }
+  .result-card:hover { transform: translateY(-2px); }
+  .result-card .rc-label {
+    font-size: 11px; font-weight: 500; color: var(--slate); text-transform: uppercase; letter-spacing: .06em;
+  }
+  .result-card .rc-value {
+    font-size: 22px; font-weight: 700; color: var(--ink);
+    font-family: 'DM Serif Display', serif;
+    transition: color .3s;
+  }
+  .result-card .rc-sub { font-size: 11px; color: var(--slate); }
+
+  /* ── Big savings banner ── */
+  .savings-banner {
+    background: linear-gradient(135deg, var(--green) 0%, #15803D 100%);
+    border-radius: 16px;
+    padding: 28px 32px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    flex-wrap: wrap;
+    animation: pulse-border 2.5s ease-in-out infinite;
+  }
+  @keyframes pulse-border {
+    0%,100% { box-shadow: 0 0 0 0 rgba(22,163,74,.35); }
+    50%      { box-shadow: 0 0 0 8px rgba(22,163,74,0); }
+  }
+  .sb-left .sb-eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing:.1em; text-transform:uppercase;
+    color: rgba(255,255,255,.7); margin-bottom: 6px;
+  }
+  .sb-left .sb-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 16px; color: rgba(255,255,255,.9);
+  }
+  .sb-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(36px, 6vw, 52px);
+    color: var(--white);
+    line-height: 1;
+    transition: all .4s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  /* ── Progress bar ── */
+  .progress-section { margin-top: 28px; }
+  .prog-label {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--slate); margin-bottom: 8px;
+  }
+  .prog-track {
+    height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;
+  }
+  .prog-fill {
+    height: 100%; background: linear-gradient(90deg, var(--blue) 0%, #60A5FA 100%);
+    border-radius: 4px; transition: width .6s cubic-bezier(.34,1.56,.64,1);
+  }
+
+  /* ── Compare bars ── */
+  .compare-section { margin-top: 28px; }
+  .compare-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .compare-row-label { font-size: 12px; color: var(--slate); width: 140px; flex-shrink: 0; }
+  .compare-bar-wrap { flex: 1; height: 28px; background: var(--slate-lt); border-radius: 6px; overflow: hidden; }
+  .compare-bar {
+    height: 100%; border-radius: 6px; display: flex; align-items: center; justify-content: flex-end; padding: 0 10px;
+    font-size: 12px; font-weight: 600; color: var(--white);
+    transition: width .7s cubic-bezier(.34,1.56,.64,1);
+    min-width: 40px;
+  }
+  .bar-trad { background: linear-gradient(90deg, #64748B, #94A3B8); }
+  .bar-ai   { background: linear-gradient(90deg, var(--blue), #60A5FA); }
+
+  /* ── Footer note ── */
+  .footer-note {
+    margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--slate); text-align: center; line-height: 1.7;
+  }
+  .footer-note strong { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-arc"></div>
+    <div class="header-eyebrow">Driving Value with Courseau by LearnUpon</div>
+    <h1>Return on Investment<br>Calculator</h1>
+    <p class="header-sub">Adjust the inputs below to see your personalised savings estimate.</p>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+
+    <!-- Inputs -->
+    <div class="section-label">Input Assumptions <span></span></div>
+
+    <div class="inputs-grid">
+
+      <div class="input-group">
+        <label>Avg. time to build a course (without AI)</label>
+        <div class="input-row">
+          <input id="hoursTraditional" type="number" value="12" min="1" max="200" step="1" oninput="sync('hoursTraditional','rHoursTraditional');calc()">
+          <div class="input-suffix">hrs</div>
+        </div>
+        <div class="slider-wrap">
+          <input id="rHoursTraditional" type="range" value="12" min="1" max="200" step="1" oninput="sync('rHoursTraditional','hoursTraditional');calc()">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Instructional designer hourly rate</label>
+        <div class="input-row">
+          <div class="input-prefix">$</div>
+          <input id="salary" type="number" value="50" min="10" max="500" step="5" oninput="sync('salary','rSalary');calc()">
+          <div class="input-suffix">p/h</div>
+        </div>
+        <div class="slider-wrap">
+          <input id="rSalary" type="range" value="50" min="10" max="500" step="5" oninput="sync('rSalary','salary');calc()">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Avg. time to build a course (with AI)</label>
+        <div class="input-row">
+          <input id="hoursAI" type="number" value="5" min="1" max="200" step="1" oninput="sync('hoursAI','rHoursAI');calc()">
+          <div class="input-suffix">hrs</div>
+        </div>
+        <div class="slider-wrap">
+          <input id="rHoursAI" type="range" value="5" min="1" max="200" step="1" oninput="sync('rHoursAI','hoursAI');calc()">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Courses created per year</label>
+        <div class="input-row">
+          <input id="courses" type="number" value="10" min="1" max="500" step="1" oninput="sync('courses','rCourses');calc()">
+          <div class="input-suffix">courses</div>
+        </div>
+        <div class="slider-wrap">
+          <input id="rCourses" type="range" value="10" min="1" max="500" step="1" oninput="sync('rCourses','courses');calc()">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Results -->
+    <div class="section-label">Calculated Results <span></span></div>
+
+    <div class="results-grid">
+      <div class="result-card">
+        <div class="rc-label">Traditional cost / course</div>
+        <div class="rc-value" id="rCostTrad">—</div>
+        <div class="rc-sub">Hours × hourly rate</div>
+      </div>
+      <div class="result-card">
+        <div class="rc-label">AI-assisted cost / course</div>
+        <div class="rc-value" id="rCostAI">—</div>
+        <div class="rc-sub">AI hours × hourly rate</div>
+      </div>
+      <div class="result-card">
+        <div class="rc-label">Savings per course</div>
+        <div class="rc-value" id="rSavingsCourse">—</div>
+        <div class="rc-sub">Traditional − AI cost</div>
+      </div>
+      <div class="result-card">
+        <div class="rc-label">Time saved per course</div>
+        <div class="rc-value" id="rTimeSaved">—</div>
+        <div class="rc-sub">Reduction in build time</div>
+      </div>
+    </div>
+
+    <!-- Big savings -->
+    <div class="savings-banner">
+      <div class="sb-left">
+        <div class="sb-eyebrow">💰 Annual Impact</div>
+        <div class="sb-title">Total Cost Savings per Year</div>
+      </div>
+      <div class="sb-value" id="rAnnual">$0</div>
+    </div>
+
+    <!-- Progress bar: time saved -->
+    <div class="progress-section">
+      <div class="prog-label">
+        <span>% of build time saved with AI</span>
+        <span id="rPctLabel">0%</span>
+      </div>
+      <div class="prog-track">
+        <div class="prog-fill" id="rPctBar" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Comparison bars -->
+    <div class="compare-section">
+      <div class="section-label" style="margin-top:20px">Time Comparison <span></span></div>
+      <div class="compare-row">
+        <div class="compare-row-label">Without AI</div>
+        <div class="compare-bar-wrap">
+          <div class="compare-bar bar-trad" id="barTrad" style="width:100%"></div>
+        </div>
+      </div>
+      <div class="compare-row">
+        <div class="compare-row-label">With AI</div>
+        <div class="compare-bar-wrap">
+          <div class="compare-bar bar-ai" id="barAI" style="width:42%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-note">
+      All figures are estimates based on the inputs you provide. Actual savings may vary.<br>
+      <strong>Courseau by LearnUpon</strong> — AI-Powered Course Creation Platform
+    </div>
+
+  </div><!-- /body -->
+</div><!-- /card -->
+
+<script>
+  function fmt(n) {
+    return '$' + Math.round(n).toLocaleString('en-US');
+  }
+  function pct(n) {
+    return Math.round(n * 100) + '%';
+  }
+
+  function sync(sourceId, targetId) {
+    document.getElementById(targetId).value = document.getElementById(sourceId).value;
+  }
+
+  function animateValue(el, newText) {
+    el.style.transform = 'scale(1.08)';
+    el.style.opacity = '0.7';
+    setTimeout(() => {
+      el.textContent = newText;
+      el.style.transform = 'scale(1)';
+      el.style.opacity = '1';
+    }, 120);
+  }
+
+  function calc() {
+    const hTrad = Math.max(parseFloat(document.getElementById('hoursTraditional').value) || 0, 0);
+    const rate  = Math.max(parseFloat(document.getElementById('salary').value) || 0, 0);
+    const hAI   = Math.max(parseFloat(document.getElementById('hoursAI').value) || 0, 0);
+    const n     = Math.max(parseFloat(document.getElementById('courses').value) || 0, 0);
+
+    const costTrad   = hTrad * rate;
+    const costAI     = hAI * rate;
+    const savingsCourse = Math.max(costTrad - costAI, 0);
+    const timeSaved  = hTrad > 0 ? (hTrad - hAI) / hTrad : 0;
+    const annual     = savingsCourse * n;
+
+    document.getElementById('rCostTrad').textContent     = fmt(costTrad);
+    document.getElementById('rCostAI').textContent       = fmt(costAI);
+    document.getElementById('rSavingsCourse').textContent = fmt(savingsCourse);
+    document.getElementById('rTimeSaved').textContent    = pct(Math.max(timeSaved, 0));
+
+    animateValue(document.getElementById('rAnnual'), fmt(annual));
+
+    const pctSaved = Math.max(Math.min(timeSaved * 100, 100), 0);
+    document.getElementById('rPctBar').style.width = pctSaved + '%';
+    document.getElementById('rPctLabel').textContent = Math.round(pctSaved) + '%';
+
+    // comparison bars — cap at 100% relative to traditional
+    const maxH = Math.max(hTrad, hAI, 1);
+    document.getElementById('barTrad').style.width = (hTrad / maxH * 100) + '%';
+    document.getElementById('barAI').style.width   = (hAI  / maxH * 100) + '%';
+    document.getElementById('barTrad').textContent = hTrad + ' hrs';
+    document.getElementById('barAI').textContent   = hAI   + ' hrs';
+  }
+
+  // init
+  calc();
+</script>
+</body>
+</html>
